@@ -1,274 +1,274 @@
-# Project Workflow
+# Project Workflow (项目开发工作流)
 
-## Guiding Principles
+## 指导原则 (Guiding Principles)
 
-1. **The Plan is the Source of Truth:** All work must be tracked in `plan.md`
-2. **The Tech Stack is Deliberate:** Changes to the tech stack must be documented in `tech-stack.md` *before* implementation
-3. **Test-Driven Development:** Write unit tests before implementing functionality
-4. **High Code Coverage:** Aim for >80% code coverage for all modules
-5. **User Experience First:** Every decision should prioritize user experience
-6. **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` for watch-mode tools (tests, linters) to ensure single execution.
+1. **计划是唯一事实来源 (The Plan is the Source of Truth):** 所有工作必须在 `plan.md` 中进行追踪与更新。
+2. **技术栈演进必须审慎备案 (The Tech Stack is Deliberate):** 对技术栈的任何变更，必须在编码实现*之前*于 `tech-stack.md` 中完成归档记录。
+3. **测试驱动开发 (Test-Driven Development / TDD):** 必须先编写单元测试用例，再进行业务功能实现。
+4. **高单测覆盖率 (High Code Coverage):** 所有模块的测试覆盖率目标必须维持在 >80%。
+5. **用户体验第一 (User Experience First):** 每一项架构与实现决策均应优先考量用户体验。
+6. **契合非交互式与 CI 环境 (Non-Interactive & CI-Aware):** 优先使用非交互式命令。对于具备监听模式 (watch mode) 的工具（如测试套件、linter），强制使用 `CI=true` 环境变量以保证单次运行并退出。
 
-## Task Workflow
+## 任务工作流 (Task Workflow)
 
-All tasks follow a strict lifecycle:
+所有任务必须严格遵循标准生命周期：
 
-### Standard Task Workflow
+### 标准任务工作流 (Standard Task Workflow)
 
-1. **Select Task:** Choose the next available task from `plan.md` in sequential order
+1. **选择任务 (Select Task):** 按顺序从 `plan.md` 中挑选下一个待办任务。
 
-2. **Mark In Progress:** Before beginning work, edit `plan.md` and change the task from `[ ]` to `[~]`
+2. **标记为进行中 (Mark In Progress):** 在着手工作前，编辑 `plan.md` 将该任务的状态从 `[ ]` 修改为 `[~]`。
 
-3. **Write Failing Tests (Red Phase):**
-   - Create a new test file for the feature or bug fix.
-   - Write one or more unit tests that clearly define the expected behavior and acceptance criteria for the task.
-   - **CRITICAL:** Run the tests and confirm that they fail as expected. This is the "Red" phase of TDD. Do not proceed until you have failing tests.
+3. **编写失败测试 / 红灯阶段 (Write Failing Tests - Red Phase):**
+   - 为该特性或 Bug 修复创建新的测试文件。
+   - 编写一个或多个单元测试，明确定义该任务的预期行为与验收标准。
+   - **CRITICAL:** 运行测试，并确认测试如预期那样失败。这是 TDD 的“红灯”阶段。未确认测试失败前，严禁进入编码实现。
 
-4. **Implement to Pass Tests (Green Phase):**
-   - Write the minimum amount of application code necessary to make the failing tests pass.
-   - Run the test suite again and confirm that all tests now pass. This is the "Green" phase.
+4. **编码以通过测试 / 绿灯阶段 (Implement to Pass Tests - Green Phase):**
+   - 编写通过失败测试所必需的最小量应用代码。
+   - 再次运行测试套件，确认当前所有测试均已顺利通过。这是 TDD 的“绿灯”阶段。
 
-5. **Refactor (Optional but Recommended):**
-   - With the safety of passing tests, refactor the implementation code and the test code to improve clarity, remove duplication, and enhance performance without changing the external behavior.
-   - Rerun tests to ensure they still pass after refactoring.
+5. **代码重构 (Refactor - 可选但强烈推荐):**
+   - 在测试通过的保护网下，对实现代码与测试代码进行重构，以提高可读性、消除重复并优化性能，同时绝不改变外部行为。
+   - 重构完成后重新运行测试，确保所有测试依然通过。
 
-6. **Verify Coverage:** Run coverage reports using the project's chosen tools. For example, in a Python project, this might look like:
+6. **验证覆盖率 (Verify Coverage):** 使用项目选定的覆盖率工具生成报告。例如在 Python 工程中：
    ```bash
    pytest --cov=app --cov-report=html
    ```
-   Target: >80% coverage for new code. The specific tools and commands will vary by language and framework.
+   目标：新编写的代码测试覆盖率 >80%。具体命令与工具依项目语言和框架而定。
 
-7. **Document Deviations:** If implementation differs from tech stack:
-   - **STOP** implementation
-   - Update `tech-stack.md` with new design
-   - Add dated note explaining the change
-   - Resume implementation
+7. **记录技术栈偏离 (Document Deviations):** 若实际实现偏离了最初的技术栈：
+   - **立即停止** 编码实现；
+   - 在 `tech-stack.md` 中更新新的设计与依赖；
+   - 附带日期说明变更原因；
+   - 恢复编码实现。
 
-8. **Commit Code Changes:**
-   - Stage all code changes related to the task.
-   - Propose a clear, concise commit message e.g, `feat(ui): Create basic HTML structure for calculator`.
-   - Perform the commit.
+8. **提交代码变更 (Commit Code Changes):**
+   - 暂存与该任务相关的所有代码变更。
+   - 提议清晰简洁的 commit 信息，例如 `feat(ui): Create basic HTML structure for calculator`。
+   - 执行提交。
 
-9. **Attach Task Summary with Git Notes:**
-   - **Step 9.1: Get Commit Hash:** Obtain the hash of the *just-completed commit* (`git log -1 --format="%H"`).
-   - **Step 9.2: Draft Note Content:** Create a detailed summary for the completed task. This should include the task name, a summary of changes, a list of all created/modified files, and the core "why" for the change.
-   - **Step 9.3: Attach Note:** Use the `git notes` command to attach the summary to the commit.
+9. **使用 Git Notes 附加任务小结 (Attach Task Summary with Git Notes):**
+   - **步骤 9.1 获取提交哈希:** 获取刚刚完成的提交哈希 (`git log -1 --format="%H"`)。
+   - **步骤 9.2 起草小结内容:** 为完成的任务创建详尽小结，包括任务名称、改动概述、新建/修改的文件列表，以及改动的核心技术动机。
+   - **步骤 9.3 附加小结 Notes:** 使用 `git notes` 命令将小结附加至该 commit：
      ```bash
-     # The note content from the previous step is passed via the -m flag.
+     # 上一步的小结内容通过 -m 参数传入
      git notes add -m "<note content>" <commit_hash>
      ```
 
-10. **Get and Record Task Commit SHA:**
-    - **Step 10.1: Update Plan:** Read `plan.md`, find the line for the completed task, update its status from `[~]` to `[x]`, and append the first 7 characters of the *just-completed commit's* commit hash.
-    - **Step 10.2: Write Plan:** Write the updated content back to `plan.md`.
+10. **记录任务提交 SHA (Get and Record Task Commit SHA):**
+    - **步骤 10.1 更新计划:** 读取 `plan.md`，找到该已完成任务所在行，将状态从 `[~]` 更新为 `[x]`，并在行尾追加该提交的短 SHA（前 7 位）。
+    - **步骤 10.2 写回计划:** 将更新后的内容写回 `plan.md`。
 
-11. **Commit Plan Update:**
-    - **Action:** Stage the modified `plan.md` file.
-    - **Action:** Commit this change with a descriptive message (e.g., `conductor(plan): Mark task 'Create user model' as complete`).
+11. **提交计划更新 (Commit Plan Update):**
+    - **操作:** 暂存修改后的 `plan.md` 文件。
+    - **操作:** 执行提交，附带规范说明（例如 `conductor(plan): Mark task 'Create user model' as complete`）。
 
-### Phase Completion Verification and Checkpointing Protocol
+### Phase Completion Verification and Checkpointing Protocol (阶段验收与检查点协议)
 
-**Trigger:** This protocol is executed immediately after a task is completed that also concludes a phase in `plan.md`.
+**触发时机:** 当完成一个任务，且该任务同时标志着 `plan.md` 中某一整个阶段 (Phase) 的圆满结束时，立即触发本协议。
 
-1.  **Announce Protocol Start:** Inform the user that the phase is complete and the verification and checkpointing protocol has begun.
+1. **通告协议启动:** 告知用户当前阶段已完成，阶段验收与检查点协议已正式启动。
 
-2.  **Ensure Test Coverage for Phase Changes:**
-    -   **Step 2.1: Determine Phase Scope:** To identify the files changed in this phase, you must first find the starting point. Read `plan.md` to find the Git commit SHA of the *previous* phase's checkpoint. If no previous checkpoint exists, the scope is all changes since the first commit.
-    -   **Step 2.2: List Changed Files:** Execute `git diff --name-only <previous_checkpoint_sha> HEAD` to get a precise list of all files modified during this phase.
-    -   **Step 2.3: Verify and Create Tests:** For each file in the list:
-        -   **CRITICAL:** First, check its extension. Exclude non-code files (e.g., `.json`, `.md`, `.yaml`).
-        -   For each remaining code file, verify a corresponding test file exists.
-        -   If a test file is missing, you **must** create one. Before writing the test, **first, analyze other test files in the repository to determine the correct naming convention and testing style.** The new tests **must** validate the functionality described in this phase's tasks (`plan.md`).
+2. **确保阶段代码的测试覆盖:**
+   - **步骤 2.1 确定阶段范围:** 为识别该阶段变动的所有文件，首先定位起点。读取 `plan.md` 获取上一阶段检查点 (checkpoint) 的 Git 提交 SHA。若不存在上一检查点，则范围为从初次提交以来的所有变更。
+   - **步骤 2.2 列出变动文件:** 执行 `git diff --name-only <previous_checkpoint_sha> HEAD`，获取该阶段修改的精确文件列表。
+   - **步骤 2.3 核实并补齐测试:** 针对列表中的每个文件：
+     - **CRITICAL:** 首先检查文件后缀，排除非代码文件（如 `.json`, `.md`, `.yaml`）。
+     - 针对每个代码文件，核验是否存在对应的测试文件。
+     - 若测试文件缺失，**必须**补写。在编写测试前，**首先分析仓库中的其他测试文件以对齐命名规范与测试风格**。新增测试必须验证该阶段任务 (`plan.md`) 中所描述的功能。
 
-3.  **Execute Automated Tests with Proactive Debugging:**
-    -   Before execution, you **must** announce the exact shell command you will use to run the tests.
-    -   **Example Announcement:** "I will now run the automated test suite to verify the phase. **Command:** `CI=true npm test`"
-    -   Execute the announced command.
-    -   If tests fail, you **must** inform the user and begin debugging. You may attempt to propose a fix a **maximum of two times**. If the tests still fail after your second proposed fix, you **must stop**, report the persistent failure, and ask the user for guidance.
+3. **运行自动化测试并主动排障:**
+   - 在执行前，你**必须**向用户通告将要运行的确切 Shell 命令。
+   - **通告示例:** "我现在将运行自动化测试套件以验证阶段成果。**执行命令:** `CI=true npm test`"
+   - 执行所通告的命令。
+   - 若测试失败，你**必须**通报用户并展开排障。你**最多可以尝试提议修复两次**。若第二次修复后测试依然失败，你**必须停下**，报告持续失败的情况，并请求用户指导。
 
-4.  **Propose a Detailed, Actionable Manual Verification Plan:**
-    -   **CRITICAL:** To generate the plan, first analyze `product.md`, `product-guidelines.md`, and `plan.md` to determine the user-facing goals of the completed phase.
-    -   You **must** generate a step-by-step plan that walks the user through the verification process, including any necessary commands and specific, expected outcomes.
-    -   The plan you present to the user **must** follow this format:
+4. **提出详尽、可操作的手动验证计划:**
+   - **CRITICAL:** 分析 `product.md`、`product-guidelines.md` 与 `plan.md`，明确已完成阶段面向用户的实际目标。
+   - 你**必须**制定分步验证计划，引导用户完成验证流程，包括任何必要的命令和预期的具体结果。
+   - 呈现给用户的计划**必须**严格遵循以下格式：
 
-        **For a Frontend Change:**
-        ```
-        The automated tests have passed. For manual verification, please follow these steps:
+     **针对前端界面变更 (Frontend):**
+     ```
+     自动化测试已通过。人工验证请遵循以下步骤：
 
-        **Manual Verification Steps:**
-        1.  **Start the development server with the command:** `npm run dev`
-        2.  **Open your browser to:** `http://localhost:3000`
-        3.  **Confirm that you see:** The new user profile page, with the user's name and email displayed correctly.
-        ```
+     **人工验证步骤：**
+     1. **启动开发服务器：** 执行 `npm run dev`
+     2. **打开浏览器访问：** `http://localhost:3000`
+     3. **确认界面呈现：** 看到全新的用户个人资料页面，且用户的姓名与邮箱正确展示。
+     ```
 
-        **For a Backend Change:**
-        ```
-        The automated tests have passed. For manual verification, please follow these steps:
+     **针对后端服务变更 (Backend):**
+     ```
+     自动化测试已通过。人工验证请遵循以下步骤：
 
-        **Manual Verification Steps:**
-        1.  **Ensure the server is running.**
-        2.  **Execute the following command in your terminal:** `curl -X POST http://localhost:8080/api/v1/users -d '{"name": "test"}'`
-        3.  **Confirm that you receive:** A JSON response with a status of `201 Created`.
-        ```
+     **人工验证步骤：**
+     1. **确保后端服务处于运行状态。**
+     2. **在终端执行以下命令：** `curl -X POST http://localhost:8080/api/v1/users -d '{"name": "test"}'`
+     3. **确认返回结果：** 收到 HTTP 状态码为 `201 Created` 的 JSON 响应。
+     ```
 
-        **For GUI / Desktop Application Changes (Qt/QML, HMI, Desktop GUI):**
-        ```
-        The automated tests have passed. For desktop GUI verification and screenshot evidence, please follow these steps:
+     **针对 GUI / 桌面端应用变更 (Qt/QML, HMI, Desktop GUI):**
+     ```
+     自动化测试已通过。针对桌面端 GUI 视觉核验与截图留痕，请遵循以下步骤：
 
-        **GUI Manual Verification & Screenshot Steps:**
-        1.  **Launch the target application:** Run the GUI application executable or launch via test harness.
-        2.  **Verify visual rendering & interactions:** Confirm UI components, layout, and smooth 60 FPS rendering without visual artifacts.
-        3.  **Dynamic Directory Creation & Screenshot Capture:**
-            - Ensure the track images directory exists (on-demand): `mkdir -p conductor/tracks/<track_id>/images/`
-            - Capture physical screenshot(s) of the target window or screen states.
-            - Save image(s) to: `conductor/tracks/<track_id>/images/<phase_name>_<state_description>.png` (or `.webp`).
-            - If `<track_id>/index.md` does not already list `- [Verification Images](./images/)`, dynamically append it.
-        4.  **Confirm that you see:** The expected UI state matches the design specification.
-        ```
+     **GUI 人工核验与截图留痕步骤：**
+     1. **启动目标应用程序：** 运行 GUI 可执行文件或通过测试脚手架拉起应用。
+     2. **核验视觉渲染与交互：** 确认 UI 控件、布局结构及 60 FPS 流畅渲染，无画面撕裂或视觉瑕疵。
+     3. **按需创建目录并截取界面图像：**
+        - 确保轨道截图目录存在：`mkdir -p conductor/tracks/<track_id>/images/`
+        - 截取目标窗口或特定界面状态的截图。
+        - 保存图片至：`conductor/tracks/<track_id>/images/<phase_name>_<state_description>.png`（或 `.webp`）。
+        - 若 `<track_id>/index.md` 尚未登记 `- [Verification Images](./images/)`，动态挂载该索引。
+     4. **确认界面呈现：** 界面视觉呈现与设计规范完全对齐。
+     ```
 
-5.  **Await Explicit User Feedback:**
-    -   After presenting the detailed plan, ask the user for confirmation: "**Does this meet your expectations? Please confirm with yes or provide feedback on what needs to be changed.**"
-    -   **PAUSE** and await the user's response. Do not proceed without an explicit yes or confirmation.
+5. **等待用户明确反馈:**
+   - 呈现详细验证计划后，询问用户确认："**这是否符合你的预期？请回复 yes 确认，或反馈需要修改之处。**"
+   - **暂停执行 (PAUSE)** 并等待用户回复。未经明确的 yes 或确认批准，严禁擅自推进。
 
-6.  **Create Checkpoint Commit:**
-    -   Stage all changes. If no changes occurred in this step, proceed with an empty commit.
-    -   Perform the commit with a clear and concise message (e.g., `conductor(checkpoint): Checkpoint end of Phase X`).
+6. **创建检查点提交 (Create Checkpoint Commit):**
+   - 暂存所有变更。若此步骤未产生实际文件变更，执行空提交 (empty commit)。
+   - 使用规范信息提交（例如 `conductor(checkpoint): Checkpoint end of Phase X`）。
 
-7.  **Attach Auditable Verification Report using Git Notes:**
-    -   **Step 7.1: Draft Note Content:** Create a detailed verification report including the automated test command, the manual verification steps, and the user's confirmation.
-    -   **Step 7.2: Attach Note:** Use the `git notes` command and the full commit hash from the previous step to attach the full report to the checkpoint commit.
+7. **使用 Git Notes 附加可审计的验证报告:**
+   - **步骤 7.1 起草报告内容:** 编写包含自动化测试命令、人工验证步骤及用户确认情况的详尽验证报告。
+   - **步骤 7.2 附加 Notes:** 使用 `git notes` 命令与前一步的完整提交哈希，将全量报告挂载至检查点 commit。
 
-8.  **Get and Record Phase Checkpoint SHA:**
-    -   **Step 8.1: Get Commit Hash:** Obtain the hash of the *just-created checkpoint commit* (`git log -1 --format="%H"`).
-    -   **Step 8.2: Update Plan:** Read `plan.md`, find the heading for the completed phase, and append the first 7 characters of the commit hash in the format `[checkpoint: <sha>]`.
-    -   **Step 8.3: Write Plan:** Write the updated content back to `plan.md`.
+8. **获取并记录阶段检查点 SHA:**
+   - **步骤 8.1 获取提交哈希:** 获取刚刚创建的检查点提交哈希 (`git log -1 --format="%H"`).
+   - **步骤 8.2 更新计划:** 读取 `plan.md`，找到已完成阶段的标题，追加提交哈希的前 7 位字符，格式为 `[checkpoint: <sha>]`。
+   - **步骤 8.3 写回计划:** 将更新写回 `plan.md`。
 
-9. **Commit Plan Update:**
-    - **Action:** Stage the modified `plan.md` file.
-    - **Action:** Commit this change with a descriptive message following the format `conductor(plan): Mark phase '<PHASE NAME>' as complete`.
+9. **提交计划更新:**
+   - **操作:** 暂存修改后的 `plan.md`。
+   - **操作:** 执行提交，信息格式为 `conductor(plan): Mark phase '<PHASE NAME>' as complete`。
 
-10.  **Announce Completion:** Inform the user that the phase is complete and the checkpoint has been created, with the detailed verification report attached as a git note.
+10. **通告阶段圆满完成:** 告知用户该阶段已圆满结束，检查点已创建完毕，且可审计的验证报告已通过 Git Notes 留痕。
 
-### Quality Gates
+### 质量门禁 (Quality Gates)
 
-Before marking any task complete, verify:
+在将任何任务标记为已完成之前，必须严格核验：
 
-- [ ] All tests pass
-- [ ] Code coverage meets requirements (>80%)
-- [ ] Code follows project's code style guidelines (as defined in `code_styleguides/`)
-- [ ] All public functions/methods are documented (e.g., docstrings, JSDoc, GoDoc)
-- [ ] Type safety is enforced (e.g., type hints, TypeScript types, Go types)
-- [ ] No linting or static analysis errors (using the project's configured tools)
-- [ ] Works correctly on mobile (if applicable)
-- [ ] For GUI/Desktop tasks: Physical verification screenshot(s) captured and saved in `conductor/tracks/<track_id>/images/`
-- [ ] Documentation updated if needed
-- [ ] No security vulnerabilities introduced
+- [ ] 所有测试用例均通过
+- [ ] 代码测试覆盖率满足要求 (>80%)
+- [ ] 代码严格符合项目的代码风格规范（定义在 `code_styleguides/` 中）
+- [ ] 所有公共函数与方法均已完成文档注释（如 docstrings, JSDoc, GoDoc）
+- [ ] 类型安全得到严格保障（如类型注解、TypeScript 类型、Go 强类型）
+- [ ] 无任何 Linting 或静态分析告警（使用项目配置的工具链）
+- [ ] 在移动端运行良好（若适用）
+- [ ] 针对 GUI/桌面端任务：界面核验截图已捕获并保存于 `conductor/tracks/<track_id>/images/`
+- [ ] 必要时已完成全局文档同步更新
+- [ ] 未引入任何安全漏洞或硬编码敏感信息
 
-## Development Commands
+## 开发常用命令 (Development Commands)
 
-**AI AGENT INSTRUCTION: This section should be adapted to the project's specific language, framework, and build tools.**
+**AI 智能体指引: 本节应根据项目的具体编程语言、框架与构建工具链进行适配定制。**
 
-### Setup
+### 环境搭建 (Setup)
 ```bash
-# Example: Commands to set up the development environment (e.g., install dependencies, configure database)
-# e.g., for a Node.js project: npm install
-# e.g., for a Go project: go mod tidy
+# 示例：搭建开发环境的命令（如安装依赖包、配置本地数据库等）
+# Node.js 项目示例：npm install
+# Go 项目示例：go mod tidy
 ```
 
-### Daily Development
+### 日常开发 (Daily Development)
 ```bash
-# Example: Commands for common daily tasks (e.g., start dev server, run tests, lint, format)
-# e.g., for a Node.js project: npm run dev, npm test, npm run lint
-# e.g., for a Go project: go run main.go, go test ./..., go fmt ./...
+# 示例：日常高频任务命令（如启动开发服务器、执行测试、代码检查与格式化等）
+# Node.js 项目示例：npm run dev, npm test, npm run lint
+# Go 项目示例：go run main.go, go test ./..., go fmt ./...
 ```
 
-### Before Committing
+### 提交前核验 (Before Committing)
 ```bash
-# Example: Commands to run all pre-commit checks (e.g., format, lint, type check, run tests)
-# e.g., for a Node.js project: npm run check
-# e.g., for a Go project: make check (if a Makefile exists)
+# 示例：运行所有提交前门禁检查（如代码格式化、Lint、类型核验、单元测试全量回归）
+# Node.js 项目示例：npm run check
+# Go 项目示例：make check（若存在 Makefile）
 ```
 
-## Testing Requirements
+## 测试规范 (Testing Requirements)
 
-### Unit Testing
-- Every module must have corresponding tests.
-- Use appropriate test setup/teardown mechanisms (e.g., fixtures, beforeEach/afterEach).
-- Mock external dependencies.
-- Test both success and failure cases.
+### 单元测试 (Unit Testing)
+- 每个业务模块必须配套对应的测试用例。
+- 采用规范的测试 setup/teardown 机制（如 fixtures, beforeEach/afterEach）。
+- 对外部第三方依赖实施 Mock 隔离。
+- 必须覆盖成功路径与异常边界情况。
 
-### Integration Testing
-- Test complete user flows
-- Verify database transactions
-- Test authentication and authorization
-- Check form submissions
+### 集成测试 (Integration Testing)
+- 验证完整的端到端用户操作流程。
+- 核验数据库事务完整性。
+- 测试鉴权与权限访问控制。
+- 校验表单与接口提交数据。
 
-### Mobile Testing
-- Test on actual iPhone when possible
-- Use Safari developer tools
-- Test touch interactions
-- Verify responsive layouts
-- Check performance on 3G/4G
+### 移动端测试 (Mobile Testing)
+- 尽可能在真实的 iPhone 设备上进行实测。
+- 使用 Safari 开发者调试工具。
+- 测试触控手势交互体验。
+- 校验响应式自适应布局。
+- 在 3G/4G 弱网环境下测试加载性能。
 
-## Code Review Process
+## 代码审查流程 (Code Review Process)
 
-### Self-Review Checklist
-Before requesting review:
+### 自查清单 (Self-Review Checklist)
+在发起代码审查之前自检：
 
-1. **Functionality**
-   - Feature works as specified
-   - Edge cases handled
-   - Error messages are user-friendly
+1. **功能完备性 (Functionality)**
+   - 功能严格按照规范实现
+   - 充分处理极端与异常边界情况
+   - 错误提示信息对用户友好
 
-2. **Code Quality**
-   - Follows style guide
-   - DRY principle applied
-   - Clear variable/function names
-   - Appropriate comments
+2. **代码质量 (Code Quality)**
+   - 遵循既定代码风格规范
+   - 贯彻 DRY (Don't Repeat Yourself) 原则
+   - 变量与函数命名清晰自解释
+   - 核心逻辑配有恰当的注释
 
-3. **Testing**
-   - Unit tests comprehensive
-   - Integration tests pass
-   - Coverage adequate (>80%)
+3. **测试充分度 (Testing)**
+   - 单元测试覆盖全面
+   - 集成测试全量通过
+   - 覆盖率满足指标 (>80%)
 
-4. **Security**
-   - No hardcoded secrets
-   - Input validation present
-   - SQL injection prevented
-   - XSS protection in place
+4. **安全性 (Security)**
+   - 无任何硬编码密钥或密码
+   - 具备完备的输入过滤校验
+   - 阻断 SQL 注入隐患
+   - 具备 XSS 防护措施
 
-5. **Performance**
-   - Database queries optimized
-   - Images optimized
-   - Caching implemented where needed
+5. **性能优化 (Performance)**
+   - 数据库查询经过索引与语句优化
+   - 图片与静态资源完成压缩优化
+   - 必要场景合理接入缓存
 
-6. **Mobile Experience**
-   - Touch targets adequate (44x44px)
-   - Text readable without zooming
-   - Performance acceptable on mobile
-   - Interactions feel native
+6. **移动端体验 (Mobile Experience)**
+   - 触控热区达标 (不小于 44x44px)
+   - 文字免缩放即可清晰阅读
+   - 移动端运行性能流畅
+   - 交互动效贴近原生体验
 
-## Commit Guidelines
+## 提交规范 (Commit Guidelines)
 
-### Message Format
+### 消息格式 (Message Format)
 ```
 <type>(<scope>): <description>
 
-[optional body]
+[可选的正文 body]
 
-[optional footer]
+[可选的页脚 footer]
 ```
 
-### Types
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation only
-- `style`: Formatting, missing semicolons, etc.
-- `refactor`: Code change that neither fixes a bug nor adds a feature
-- `test`: Adding missing tests
-- `chore`: Maintenance tasks
+### 提交类型 (Types)
+- `feat`: 新功能特性
+- `fix`: 缺陷修复
+- `docs`: 纯文档变动
+- `style`: 代码格式调整（不影响逻辑的代码格式、分号等）
+- `refactor`: 重构（既非新增功能也非修复 Bug 的代码变动）
+- `test`: 补齐或重构测试代码
+- `chore`: 构建系统或辅助工具的变动
 
-### Examples
+### 提交示例 (Examples)
 ```bash
 git commit -m "feat(auth): Add remember me functionality"
 git commit -m "fix(posts): Correct excerpt generation for short posts"
@@ -276,74 +276,74 @@ git commit -m "test(comments): Add tests for emoji reaction limits"
 git commit -m "style(mobile): Improve button touch targets"
 ```
 
-## Definition of Done
+## 完工定义 (Definition of Done - DoD)
 
-A task is complete when:
+当且仅当满足以下全部条件时，该任务方可宣告完成：
 
-1. All code implemented to specification
-2. Unit tests written and passing
-3. Code coverage meets project requirements
-4. Documentation complete (if applicable)
-5. Code passes all configured linting and static analysis checks
-6. Works beautifully on mobile (if applicable)
-7. Implementation notes added to `plan.md`
-8. Changes committed with proper message
-9. Git note with task summary attached to the commit
+1. 全部代码严格按照规范实现完毕
+2. 单元测试编写完成且全部通过
+3. 代码测试覆盖率达到项目设定的门禁标准
+4. 关联技术文档同步补充完整（若适用）
+5. 代码通过项目配置的所有 Lint 与静态分析检查
+6. 移动端运行表现优异（若适用）
+7. 实施注解已登记在 `plan.md` 中
+8. 变更以规范的 Commit Message 完成 Git 提交
+9. 包含任务小结的 Git Note 已正确附加至提交记录
 
-## Emergency Procedures
+## 应急响应流程 (Emergency Procedures)
 
-### Critical Bug in Production
-1. Create hotfix branch from main
-2. Write failing test for bug
-3. Implement minimal fix
-4. Test thoroughly including mobile
-5. Deploy immediately
-6. Document in plan.md
+### 生产环境严重缺陷 (Critical Bug in Production)
+1. 基于 main 分支切出紧急修复分支 (hotfix)
+2. 为该 Bug 编写可复现的失败测试用例
+3. 实现最小粒度的安全修复
+4. 深度回归测试（包括移动端）
+5. 立即执行部署上线
+6. 在 `plan.md` 中补齐复盘记录
 
-### Data Loss
-1. Stop all write operations
-2. Restore from latest backup
-3. Verify data integrity
-4. Document incident
-5. Update backup procedures
+### 数据丢失灾难 (Data Loss)
+1. 立即停止一切写操作
+2. 从最新安全快照/备份中执行数据恢复
+3. 校验数据完整性与一致性
+4. 撰写故障复盘报告
+5. 升级完善定期备份策略
 
-### Security Breach
-1. Rotate all secrets immediately
-2. Review access logs
-3. Patch vulnerability
-4. Notify affected users (if any)
-5. Document and update security procedures
+### 安全漏洞事件 (Security Breach)
+1. 立即吊销并轮换所有敏感凭证与密钥
+2. 审查安全访问日志
+3. 修复代码漏洞并打补丁
+4. 必要时向受影响用户发出通告
+5. 归档事故报告并升级安全防护规范
 
-## Deployment Workflow
+## 发布与部署工作流 (Deployment Workflow)
 
-### Pre-Deployment Checklist
-- [ ] All tests passing
-- [ ] Coverage >80%
-- [ ] No linting errors
-- [ ] Mobile testing complete
-- [ ] Environment variables configured
-- [ ] Database migrations ready
-- [ ] Backup created
+### 发布前检查清单 (Pre-Deployment Checklist)
+- [ ] 全量测试套件通过
+- [ ] 测试覆盖率 >80%
+- [ ] 零 Lint 报错告警
+- [ ] 移动端真机测试通过
+- [ ] 生产环境变量配置就绪
+- [ ] 数据库迁移脚本校验完毕
+- [ ] 数据备份完成
 
-### Deployment Steps
-1. Merge feature branch to main
-2. Tag release with version
-3. Push to deployment service
-4. Run database migrations
-5. Verify deployment
-6. Test critical paths
-7. Monitor for errors
+### 部署步骤 (Deployment Steps)
+1. 将特性分支合并至主分支 (main)
+2. 打上对应版本号的发布标签 (Tag release)
+3. 推送至发布部署流水线
+4. 执行数据库结构变更迁移
+5. 验证部署运行状态
+6. 对关键业务路径执行冒烟测试
+7. 持续监控服务错误日志
 
-### Post-Deployment
-1. Monitor analytics
-2. Check error logs
-3. Gather user feedback
-4. Plan next iteration
+### 部署后收尾 (Post-Deployment)
+1. 监控各项核心业务数据与指标
+2. 持续观察错误日志与异常上报
+3. 收集用户与测试反馈
+4. 规划下一轮迭代
 
-## Continuous Improvement
+## 持续改进 (Continuous Improvement)
 
-- Review workflow weekly
-- Update based on pain points
-- Document lessons learned
-- Optimize for user happiness
-- Keep things simple and maintainable
+- 每周例行复盘开发工作流
+- 针对研发痛点及时迭代优化工作流
+- 记录经验教训与避坑要点
+- 以用户满意度为导向持续精进
+- 始终保持架构与流程的简单与可维护性

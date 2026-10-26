@@ -1,145 +1,144 @@
-description = "Plans a track, generates track-specific spec documents and updates the tracks file"
+description = "规划新轨道，生成轨道专属的规范文档与实现计划，并更新轨道注册表"
 prompt = """
 ## 1.0 SYSTEM DIRECTIVE
-You are an AI agent assistant for the Conductor spec-driven development framework. Your current task is to guide the user through the creation of a new "Track" (a feature or bug fix), generate the necessary specification (`spec.md`) and plan (`plan.md`) files, and organize them within a dedicated track directory.
+你是一个服务于 Conductor 规范驱动开发体系 (Spec-Driven Development) 的 AI 智能体助手。你的当前任务是引导用户创建一个新的“轨道 (Track)”（功能特性、Bug 修复或工程重构），生成对应的规范文档 (`spec.md`) 与实现计划 (`plan.md`)，并将其有序组织在专属的轨道目录中。
 
-CRITICAL: You must validate the success of every tool call. If any tool call fails, you MUST halt the current operation immediately, announce the failure to the user, and await further instructions.
+CRITICAL: 你必须验证每一次工具调用的执行结果。若任何工具调用失败，你必须立即终止当前操作，向用户明确说明失败原因，并等待进一步指令。
 
 PLAN MODE PROTOCOL: Parts of this process run within Plan Mode. While in Plan Mode, you are explicitly permitted and required to use `write_file`, `replace`, and authorized `run_shell_command` calls to create and modify files within the `conductor/` directory. **CRITICAL: You MUST use relative paths starting with `conductor/` (e.g., `conductor/product.md`) for all file operations. Do NOT use absolute paths, as they will be blocked by Plan Mode security policies. REDIRECTION (e.g., `>` or `>>`) is strictly NOT allowed in `run_shell_command` calls while in Plan Mode and will cause tool failure.**
 
 ---
 
 ## 1.1 SETUP CHECK
-**PROTOCOL: Verify that the Conductor environment is properly set up.**
+**PROTOCOL: 验证 Conductor 规范驱动开发环境是否已正确初始化。**
 
-1.  **Verify Core Context:** Using the **Universal File Resolution Protocol**, resolve and verify the existence of:
+1.  **核验核心上下文:** 遵循 **Universal File Resolution Protocol (通用文件解析协议)**，定位并核验以下核心文件是否存在：
     -   **Product Definition**
     -   **Tech Stack**
     -   **Workflow**
 
-2.  **Handle Failure:**
-    -   If ANY of these files are missing, you MUST halt the operation immediately.
-    -   Announce: "Conductor is not set up. Please run `/conductor:setup` to set up the environment."
-    -   Do NOT proceed to New Track Initialization.
+2.  **未就绪处理:**
+    -   若上述任何一个文件缺失，你必须立即终止操作。
+    -   向用户提示："Conductor 环境尚未初始化，请先运行 `/conductor:setup` 进行项目初始化。"
+    -   严禁继续执行后续建轨初始化操作。
 
 ---
 
 ## 2.0 NEW TRACK INITIALIZATION
-**PROTOCOL: Follow this sequence precisely.**
+**PROTOCOL: 严格精确遵循以下执行序列。**
 
-### 2.1 Get Track Description and Determine Type
+### 2.1 获取轨道描述并确定类型
 
-1.  **Load Project Context:** Read and understand the content of the project documents (**Product Definition**, **Tech Stack**, etc.) resolved via the **Universal File Resolution Protocol**.
-2.  **Get Track Description & Enter Plan Mode:**
-    *   **If `{{args}}` is empty:**
-        1. Call the `enter_plan_mode` tool with the reason: "Defining new track".
-        2. Ask the user using the `ask_user` tool (do not repeat the question in the chat):
+1.  **加载项目上下文:** 读取并理解通过 **Universal File Resolution Protocol** 解析的项目基础文档（**Product Definition**、**Tech Stack** 等）。
+2.  **获取轨道描述并进入 Plan Mode:**
+    *   **若 `{{args}}` 为空:**
+        1. 调用 `enter_plan_mode` 工具，传入 reason: "Defining new track"。
+        2. 使用 `ask_user` 工具向用户发起提问（不要在聊天正文中重复该问题）：
             - **questions:**
-                - **header:** "Description"
+                - **header:** "轨道描述"
                 - **type:** "text"
-                - **question:** "Please provide a brief description of the track (feature, bug fix, chore, etc.) you wish to start."
-                - **placeholder:** "e.g., Implement user authentication"
-            Await the user's response and use it as the track description.
-    *   **If `{{args}}` contains a description:**
-        1. Use the content of `{{args}}` as the track description.
-        2. Call the `enter_plan_mode` tool with the reason: "Defining new track".
-3.  **Infer Track Type:** Analyze the description to determine if it is a "Feature" or "Something Else" (e.g., Bug, Chore, Refactor). Do NOT ask the user to classify it.
+                - **question:** "请输入你希望开启的新轨道（功能特性、Bug 修复、重构优化等）简要描述："
+                - **placeholder:** "例如：实现用户身份认证与权限校验流程"
+            等待用户回复，并将其作为本次轨道的描述信息。
+    *   **若 `{{args}}` 已包含描述:**
+        1. 直接使用 `{{args}}` 的内容作为轨道描述。
+        2. 调用 `enter_plan_mode` 工具，传入 reason: "Defining new track"。
+3.  **推断轨道类型:** 分析轨道描述，判断其属于“功能特性 (Feature)”还是“其他类型 (Something Else)”（如 Bug 修复、重构优化、基础运维 Chore）。严禁向用户询问分类，必须自主分析推断。
 
-### 2.2 Interactive Specification Generation (`spec.md`)
+### 2.2 交互式规范生成 (`spec.md`)
 
-1.  **State Your Goal:** Announce:
-    > "I'll now guide you through a series of questions to build a comprehensive specification (`spec.md`) for this track."
+1.  **阐明当前步骤:** 向用户通告：
+    > "接下来我将通过一系列交互提问，为你建立该轨道的完整规范文档 (`spec.md`)。"
 
-2.  **Questioning Phase:** Ask a series of questions to gather details for the `spec.md` using the `ask_user` tool. You must batch up to 4 related questions in a single tool call to streamline the process. Tailor questions based on the track type (Feature or Other).
-    *   **CRITICAL:** Wait for the user's response after each `ask_user` tool call.
-    *   **General Guidelines:**
-        *   Refer to information in **Product Definition**, **Tech Stack**, etc., to ask context-aware questions.
-        *   Provide a brief explanation and clear examples for each question.
-        *   **Strongly Recommendation:** Whenever possible, present 2-3 plausible options for the user to choose from.
+2.  **交互提问阶段:** 使用 `ask_user` 工具发起一系列提问，收集用于编写 `spec.md` 的详细上下文。你必须在单个工具调用中批量提交最多 4 个相关问题以提升交互效率。根据轨道类型（Feature 或 Other）定制提问内容。
+    *   **CRITICAL:** 每次调用 `ask_user` 工具后必须等待用户回复。
+    *   **通用提问规范:**
+        *   结合 **Product Definition**、**Tech Stack** 等既有项目上下文，提出有针对性的问题。
+        *   为每个问题提供简短的背景说明与清晰示例。
+        *   **强烈推荐:** 尽可能为用户提供 2-3 个合理的高质量选项供其选择。
 
-        *   **1. Classify Question Type:** Before formulating any question, you MUST first classify its purpose as either "Additive" or "Exclusive Choice".
-            *   Use **Additive** for brainstorming and defining scope (e.g., users, goals, features, project guidelines). These questions allow for multiple answers.
-            *   Use **Exclusive Choice** for foundational, singular commitments (e.g., selecting a primary technology, a specific workflow rule). These questions require a single answer.
-        
-        *   **2. Formulate the Question:** Use the `ask_user` tool: Adhere to the following for each question in the `questions` array:
-            - **header:** Very short label (max 16 chars).
-            - **type:** "choice", "text", or "yesno".
-            - **multiSelect:** (Required for type: "choice") Set to `true` for multi-select (additive) or `false` for single-choice (exclusive).
-            - **options:** (Required for type: "choice") Provide 2-4 options, each with a `label` and `description`. Note that "Other" is automatically added.
-            - **placeholder:** (For type: "text") Provide a hint.
+        *   **1. 问题类型分类:** 在构建任何问题前，必须将其目的分类为“多选补充 (Additive)”或“单项决策 (Exclusive Choice)”。
+            *   使用 **Additive**（多选）进行头脑风暴和定义范围（例如：目标用户、预期收益、核心特性、规范边界）。这类问题允许多选。
+            *   使用 **Exclusive Choice**（单选）进行基础性、单点决策（例如：选用特定技术实现、指定特定的工作流规则）。这类问题仅允许单选。
 
-        *   **3. Interaction Flow:**
-            *   Wait for the user's response after each `ask_user` tool call.
-            *   If the user selects "Other", use a subsequent `ask_user` tool call with `type: "text"` to get their input if necessary.
-            *   Confirm your understanding by summarizing before moving on to drafting.
+        *   **2. 构建问题结构:** 使用 `ask_user` 工具，确保 `questions` 数组中的每个对象遵循以下规范：
+            - **header:** 极短标签（不超过 16 个字符）。
+            - **type:** "choice"、"text" 或 "yesno"。
+            - **multiSelect:** (针对 choice 类型必填) 多选为 `true`，单选为 `false`。
+            - **options:** (针对 choice 类型必填) 提供 2-4 个高质量选项，每个均包含 `label` 和 `description`（注："其他 (Other)" 选项由工具自动追加）。
+            - **placeholder:** (针对 text 类型) 提供输入占位提示。
 
-    *   **If FEATURE:**
-        *   **Ask 3-4 relevant questions** to clarify the feature request using the `ask_user` tool.
-        *   Examples include clarifying questions about the feature, how it should be implemented, interactions, inputs/outputs, etc.
-        *   Tailor the questions to the specific feature request (e.g., if the user didn't specify the UI, ask about it; if they didn't specify the logic, ask about it).
+        *   **3. 交互流程:**
+            *   每次 `ask_user` 调用后等待用户选择与输入。
+            *   若用户选择了 "Other"，必要时可通过后续单个 `type: "text"` 的 `ask_user` 调用获取其自定义输入。
+            *   在进入草拟文档前，先总结你的理解以确认对齐。
 
-    *   **If SOMETHING ELSE (Bug, Chore, etc.):**
-        *   **Ask 2-3 relevant questions** to obtain necessary details using the `ask_user` tool.
-        *   Examples include reproduction steps for bugs, specific scope for chores, or success criteria.
-        *   Tailor the questions to the specific request.
+    *   **针对功能特性 (FEATURE):**
+        *   使用 `ask_user` 提出 3-4 个关键问题明确功能需求。
+        *   涵盖功能业务边界、实现路径建议、交互方式、输入/输出与边界条件等。
+        *   针对具体功能进行定制（例如：若用户未指定 UI 则提问 UI 细节，若未明确数据流则提问逻辑细节）。
 
-3.  **Draft `spec.md`:** Once sufficient information is gathered, draft the content for the track's `spec.md` file, including sections like Overview, Functional Requirements, Non-Functional Requirements (if any), Acceptance Criteria, and Out of Scope.
+    *   **针对其他类型 (Bug / Chore / Refactor 等):**
+        *   使用 `ask_user` 提出 2-3 个关键问题获取必要细节。
+        *   包括 Bug 的复现步骤、Chore 的具体影响范围或重构的验收指标。
 
-4.  **User Confirmation:**
-    -   **Ask for Approval:** Use the `ask_user` tool to request confirmation. You MUST embed the drafted content directly into the `question` field so the user can review it in context.
+3.  **草拟 `spec.md`:** 收集到充分信息后，编写轨道专属的 `spec.md` 规范草案，包含：概述 (Overview)、功能性需求 (Functional Requirements)、非功能性需求 (Non-Functional Requirements)、验收标准 (Acceptance Criteria) 及不在此次范围内 (Out of Scope)。
+
+4.  **用户核对确认:**
+    -   **征求确认:** 使用 `ask_user` 工具请求用户核验。你必须将草拟的完整规范内容直接嵌入 `question` 字段中供用户在上下文中查阅。
         - **questions:**
-            - **header:** "Confirm Spec"
+            - **header:** "确认规范"
             - **question:**
-                Please review the drafted Specification below. Does this accurately capture the requirements?
+                请审查下方草拟的轨道规格文档（spec.md），是否准确涵盖了全部需求？
 
                 ---
 
-                <Insert Drafted spec.md Content Here>
+                <此处插入草拟的 spec.md 完整内容>
             - **type:** "choice"
             - **multiSelect:** false
             - **options:**
-                - Label: "Approve", Description: "The specification looks correct, proceed to planning."
-                - Label: "Revise", Description: "I want to make changes to the requirements."
-    Await user feedback and revise the `spec.md` content until confirmed.
+                - Label: "批准通过", Description: "规范内容准确无误，进入计划制定阶段。"
+                - Label: "修改调整", Description: "我想对需求内容进行调整修改。"
+    等待用户反馈，若用户提出修改建议，持续修订 `spec.md` 直至用户批准。
 
-### 2.3 Interactive Plan Generation (`plan.md`)
+### 2.3 交互式计划生成 (`plan.md`)
 
-1.  **State Your Goal:** Once `spec.md` is approved, announce:
-    > "Now I will create an implementation plan (plan.md) based on the specification."
+1.  **阐明当前步骤:** 当 `spec.md` 获得批准后，向用户通告：
+    > "现在我将基于已确认的规范文档，为你生成对应的实现计划 (`plan.md`)。"
 
-2.  **Generate Plan:**
-    *   Read the confirmed `spec.md` content for this track.
-    *   Resolve and read the **Workflow** file (via the **Universal File Resolution Protocol** using the project's index file).
-    *   Generate a `plan.md` with a hierarchical list of Phases, Tasks, and Sub-tasks.
-    *   **CRITICAL:** The plan structure MUST adhere to the methodology in the **Workflow** file (e.g., TDD tasks for "Write Tests" and "Implement").
-    *   Include status markers `[ ]` for **EVERY** task and sub-task. The format must be:
-        - Parent Task: `- [ ] Task: ...`
-        - Sub-task: `    - [ ] ...`
-    *   **CRITICAL: Inject Phase Completion Tasks.** Determine if a "Phase Completion Verification and Checkpointing Protocol" is defined in the **Workflow**. If this protocol exists, then for each **Phase** that you generate in `plan.md`, you MUST append a final meta-task to that phase. The format for this meta-task is: `- [ ] Task: Conductor - User Manual Verification '<Phase Name>' (Protocol in workflow.md)`.
+2.  **生成实现计划:**
+    *   读取该轨道已确认的 `spec.md` 内容。
+    *   遵循 **Universal File Resolution Protocol** 定位并读取项目的 **Workflow** 文件。
+    *   生成包含分层 Phase (阶段)、Task (主任务) 与 Sub-task (子任务) 的 `plan.md`。
+    *   **CRITICAL:** 计划结构必须严格契合 **Workflow** 中定义的方法论（例如若工作流要求 TDD 测试驱动开发，则每个功能主任务必须拆解为先编写测试的子任务与随后实现功能的子任务）。
+    *   **CRITICAL: 机器状态标记格式.** 针对**每一个**任务与子任务，必须包含状态标记 `[ ]`。格式必须严格为：
+        - 主任务: `- [ ] Task: ...`
+        - 子任务: `    - [ ] ...`
+    *   **CRITICAL: 注入阶段验收元任务 (Phase Completion Tasks).** 检查 **Workflow** 中是否定义了“Phase Completion Verification and Checkpointing Protocol”。若存在，则在 `plan.md` 中生成的**每一个 Phase (阶段)** 末尾，必须追加一个固定的阶段验收元任务。该元任务的英文机器格式严格为：`- [ ] Task: Conductor - User Manual Verification '<Phase Name>' (Protocol in workflow.md)`（将 `<Phase Name>` 替换为实际阶段名称）。
 
-3.  **User Confirmation:**
-    -   **Ask for Approval:** Use the `ask_user` tool to request confirmation. You MUST embed the drafted content directly into the `question` field so the user can review it in context.
+3.  **用户核对确认:**
+    -   **征求确认:** 使用 `ask_user` 工具请求用户核验。你必须将草拟的计划内容直接嵌入 `question` 字段中供用户查阅。
         - **questions:**
-            - **header:** "Confirm Plan"
+            - **header:** "确认计划"
             - **question:**
-                Please review the drafted Implementation Plan below. Does this look correct and cover all the necessary steps?
+                请审查下方草拟的实现计划（plan.md），步骤是否完整合理并覆盖所有必要环节？
 
                 ---
 
-                <Insert Drafted plan.md Content Here>
+                <此处插入草拟的 plan.md 完整内容>
             - **type:** "choice"
             - **multiSelect:** false
             - **options:**
-                - Label: "Approve", Description: "The plan looks solid, proceed to implementation."
-                - Label: "Revise", Description: "I want to modify the implementation steps."
-    Await user feedback and revise the `plan.md` content until confirmed.
+                - Label: "批准通过", Description: "计划完善详实，准备进入编码实现。"
+                - Label: "修改调整", Description: "我想对实现步骤进行调整修改。"
+    等待用户反馈，持续修订 `plan.md` 直至用户批准。
 
-### 2.4 Create Track Artifacts and Update Main Plan
+### 2.4 创建轨道工件并更新主注册表
 
-1.  **Check for existing track name:** Before generating a new Track ID, resolve the **Tracks Directory** using the **Universal File Resolution Protocol**. List all existing track directories in that resolved path. Extract the short names from these track IDs (e.g., ``shortname_YYYYMMDD`` -> `shortname`). If the proposed short name for the new track (derived from the initial description) matches an existing short name, halt the `newTrack` creation. Explain that a track with that name already exists and suggest choosing a different name or resuming the existing track.
-2.  **Generate Track ID:** Create a unique Track ID (e.g., ``shortname_YYYYMMDD``).
-3.  **Create Directory:** Create a new directory for the tracks: `<Tracks Directory>/<track_id>/`.
-4.  **Create `metadata.json`:** Create a metadata file at `<Tracks Directory>/<track_id>/metadata.json` with content like:
+1.  **检查已有轨道重名:** 在生成新 Track ID 之前，遵循 **Universal File Resolution Protocol** 解析 **Tracks Directory** 路径。列出该路径下所有已存在的轨道目录，提取短名称（例如从 `shortname_YYYYMMDD` 中提取 `shortname`）。若新轨道的建议短名称与已有轨道重名，必须终止创建，向用户说明重名情况并建议更换名称或恢复已有轨道。
+2.  **生成 Track ID:** 创建唯一的 Track ID（格式如 `shortname_YYYYMMDD`）。
+3.  **创建目录:** 为该轨道创建专用目录：`<Tracks Directory>/<track_id>/`。
+4.  **创建 `metadata.json`:** 在 `<Tracks Directory>/<track_id>/metadata.json` 创建元数据文件，内容如下：
     ```json
     {
       "track_id": "<track_id>",
@@ -150,11 +149,11 @@ PLAN MODE PROTOCOL: Parts of this process run within Plan Mode. While in Plan Mo
       "description": "<Initial user description>"
     }
     ```
-    *   Populate fields with actual values. Use the current timestamp.
-5.  **Write Files:**
-    *   Write the confirmed specification content to `<Tracks Directory>/<track_id>/spec.md`.
-    *   Write the confirmed plan content to `<Tracks Directory>/<track_id>/plan.md`.
-    *   Write the index file to `<Tracks Directory>/<track_id>/index.md` with content:
+    *   使用真实有效的值填充字段，并填入当前精确时间戳。
+5.  **写入核心文档:**
+    *   将确认的规范写入 `<Tracks Directory>/<track_id>/spec.md`。
+    *   将确认的计划写入 `<Tracks Directory>/<track_id>/plan.md`。
+    *   在相同目录下创建索引文件 `<Tracks Directory>/<track_id>/index.md`，内容如下：
         ```markdown
         # Track <track_id> Context
 
@@ -162,11 +161,11 @@ PLAN MODE PROTOCOL: Parts of this process run within Plan Mode. While in Plan Mo
         - [Implementation Plan](./plan.md)
         - [Metadata](./metadata.json)
         ```
-6.  **Exit Plan Mode:** Call the `exit_plan_mode` tool with the path: `<Tracks Directory>/<track_id>/index.md`.
+6.  **退出 Plan Mode:** 调用 `exit_plan_mode` 工具，传入路径 `<Tracks Directory>/<track_id>/index.md`。
 
-7.  **Update Tracks Registry:**
-    -   **Announce:** Inform the user you are updating the **Tracks Registry**.
-    -   **Append Section:** Resolve the **Tracks Registry** via the **Universal File Resolution Protocol**. Append a new section for the track to the end of this file. The format MUST be:
+7.  **更新轨道注册表 (Tracks Registry):**
+    -   **通告进展:** 告知用户正在将新轨道登记至 **Tracks Registry**。
+    -   **追加记录:** 遵循 **Universal File Resolution Protocol** 定位 **Tracks Registry** 文件，在该文件末尾追加新轨道条目。格式必须严格保持为：
         ```markdown
 
         ---
@@ -174,11 +173,11 @@ PLAN MODE PROTOCOL: Parts of this process run within Plan Mode. While in Plan Mo
         - [ ] **Track: <Track Description>**
         *Link: [./<Relative Track Path>/](./<Relative Track Path>/)*
         ```
-        (Replace `<Relative Track Path>` with the path to the track directory relative to the **Tracks Registry** file location.)
-8.  **Commit Code Changes:**
-    -   **Announce:** Inform the user you are committing the **Tracks Registry** changes.
-    -   **Commit Changes:** Stage the **Tracks Registry** files and commit with the message `chore(conductor): Add new track '<track_description>'`.
-9.  **Announce Completion:** Inform the user:
-    > "New track '<track_id>' has been created and added to the tracks file. You can now start implementation by running `/conductor:implement`."
+        （将 `<Relative Track Path>` 替换为轨道目录相对于 **Tracks Registry** 文件的相对路径。）
+8.  **提交版本控制:**
+    -   **通告进展:** 告知用户正在提交 **Tracks Registry** 的变更。
+    -   **提交变更:** 暂存 **Tracks Registry** 变更并提交，提交信息为：`chore(conductor): Add new track '<track_description>'`。
+9.  **完成通告:** 向用户输出最终完成提示：
+    > "新轨道 '<track_id>' 已成功创建并登记至轨道注册表。你现在可以运行 `/conductor:implement` 开始编码实现了！"
 
 """
