@@ -39,6 +39,7 @@
 - **Implementation Plan (实现计划)**: `conductor/tracks/<track_id>/plan.md`
 - **Metadata (元数据)**: `conductor/tracks/<track_id>/metadata.json`
 - **Verification Images (验收截图)**: `conductor/tracks/<track_id>/images/`（按需动态创建）
+- **Verification Scripts (验证脚本)**: `conductor/tracks/<track_id>/scripts/`（按需动态创建）
 
 ## Conductor 规范驱动开发铁律 (Spec-First & SDD/TDD Safeguard)
 
@@ -51,6 +52,7 @@
      - **交互顺序状态机锁定**：在代码审查（Review）或方案推演阶段，一旦收到用户“认可方案/同意修复/开始执行”指令，状态机的第一动作强制锁定为：先更新 `spec.md` 与 `plan.md`，第二动作才允许执行代码修改。
   3. **隐式防泄与工作区隔离**：Conductor 的轨道元数据与工作流文件必须严格登记在本地 Git 的 `.git/info/exclude` 中，严禁污染公共 `.gitignore` 或误提入代码仓库。
   4. **GUI 桌面端视觉验证与截图核验（GUI Screenshot Verification & Lazy Directory Creation）**：涉及图形界面、Qt/QML 或桌面端渲染的任务，遵循 `workflow.md` 截取界面图像进行视觉核验。严禁为纯后端/无界面任务预先创建空 `images/` 目录，必须按需延迟创建（Lazy Creation）并在有截图时挂载 `index.md` 索引，以捍卫工作区纯净。
+  5. **验证脚本随轨归档与工作区纯净铁律 (Track-Scoped Verification Scripts & Lazy Directory Creation)**：凡在复现缺陷、端到端测试、总线模拟注入、图形抓取或场景打桩过程中编写的专用脚本（如 Python、Shell 测试脚本等），**严禁直接散落堆放在工程源码根目录或公共 `scripts/` 目录下**！必须遵循按需延迟创建（Lazy Creation）原则创建 `conductor/tracks/<track_id>/scripts/` 目录并将脚本就地落盘归档，赋予可执行权限（`chmod +x`），并在 `<track_id>/index.md` 挂载 `- [Verification Scripts](./scripts/)` 索引，彻底杜绝测试打桩与验证脚本污染公共 Git 工作树。（强烈推荐优先克隆扩展模板库内置的复合验证脚本母本：`<conductor>/templates/scripts/verification_harness_template.py`，经快速参数配置后一键驱动发包与抓图闭环）。
 
 ## 工程文档语言与术语规范 (Documentation & Terminology Specification)
 

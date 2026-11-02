@@ -123,7 +123,13 @@
         - 截取目标窗口或特定界面状态的截图。
         - 保存图片至：`conductor/tracks/<track_id>/images/<phase_name>_<state_description>.png`（或 `.webp`）。
         - 若 `<track_id>/index.md` 尚未登记 `- [Verification Images](./images/)`，动态挂载该索引。
-     4. **确认界面呈现：** 界面视觉呈现与设计规范完全对齐。
+     4. **按需创建目录并归档验证脚本 (Verification Scripts Scoping):**
+        - 凡为此任务编写的端到端测试、总线数据注入、缺陷复现或截图采样脚本，必须保存于轨道私有目录：`mkdir -p conductor/tracks/<track_id>/scripts/`
+        - 强烈推荐优先克隆标准复合验证模板：`cp <conductor_path>/templates/scripts/verification_harness_template.py conductor/tracks/<track_id>/scripts/verify_<feature>.py`，依据工程环境调整头部 CONFIG 配置即可一键闭环。
+        - 严禁将临时或专项测试脚本散落堆积在工程根目录或公共 `scripts/` 目录下。
+        - 确保脚本具备可执行权限：`chmod +x conductor/tracks/<track_id>/scripts/<script_name>`
+        - 若 `<track_id>/index.md` 尚未登记 `- [Verification Scripts](./scripts/)`，动态挂载该索引。
+     5. **确认界面呈现：** 界面视觉呈现与设计规范完全对齐。
      ```
 
 5. **等待用户明确反馈:**
@@ -161,6 +167,7 @@
 - [ ] 无任何 Linting 或静态分析告警（使用项目配置的工具链）
 - [ ] 在移动端运行良好（若适用）
 - [ ] 针对 GUI/桌面端任务：界面核验截图已捕获并保存于 `conductor/tracks/<track_id>/images/`
+- [ ] 专用验证与打桩脚本已规范归档于 `conductor/tracks/<track_id>/scripts/`（公共目录零脚本污染）
 - [ ] 必要时已完成全局文档同步更新
 - [ ] 未引入任何安全漏洞或硬编码敏感信息
 
