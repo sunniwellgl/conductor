@@ -111,7 +111,7 @@
      3. **确认返回结果：** 收到 HTTP 状态码为 `201 Created` 的 JSON 响应。
      ```
 
-     **针对 GUI / 桌面端应用变更 (Qt/QML, HMI, Desktop GUI):**
+     **针对 GUI / 桌面端应用变更 (Qt/QML, HMI, Desktop GUI - 对应 spec.md 中的【桌面模拟发包与靶向截图核验】手段):**
      ```
      自动化测试已通过。针对桌面端 GUI 视觉核验与截图留痕，请遵循以下步骤：
 

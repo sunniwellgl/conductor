@@ -105,6 +105,23 @@ PLAN MODE PROTOCOL: Parts of this process run within Plan Mode. While in Plan Mo
         - 非功能性需求 (Non-Functional Requirements)
         - 验收标准 (Acceptance Criteria)
         - 不在此次范围内 (Out of Scope)
+    *   **验收标准结构化范式 (Acceptance Criteria Paradigm):**
+        - 每一条验收标准 (AC) 必须包含清晰的编号、业务预期与**显式验证手段 (Verification Method)**，严禁假大空或不可检验的笼统描述。
+        - **三大法定验证手段标准体系:**
+          1. **单元与集成测试 (Unit / Integration Test):** 适用于纯 C++/核心算法、数据转换层、状态机逻辑等无 GUI 模块。
+          2. **桌面模拟发包与靶向截图核验 (Bus Injection & Targeted Screenshot):** **强烈推荐用于所有涉及 Qt/QML、HMI 视觉渲染、多态卡片联动、仪表告警与总线协议交互的界面任务。** 明确规定刺激源 (Topic / Payload)、验收判定判据 (UI 元素呈现与数值换算正确性) 及证据挂载路径。
+          3. **实车/台架联调 (Vehicle / Bench Integration):** 仅用于强依赖 QNX 底层物理驱动 (如 /dev/screen、硬线按键、硬件电源环) 的底座场景。
+        - **标准条目书写范式模板:**
+          ```markdown
+          - [ ] **AC-1 (<功能验收条目标题>):**
+            - **业务预期:** <清晰说明该特性在何种条件下的预期响应与表现>
+            - **验证手段:** 桌面模拟发包与靶向截图核验 (Bus Injection & Targeted Screenshot)
+            - **验收判定:** 
+              1. 注入前置基础工况 (如电源就绪态、车速跳过自检);
+              2. 下发刺激信号 (如 Topic=<topic>, Payload=<payload>);
+              3. 靶向截取目标应用窗口，核验预期控件/数值与规范 100% 对齐。
+            - **验证证据:** 详见 `images/<evidence_image>.png`。
+          ```
     *   **ADR 架构决策演进记录:** 若经历了深度推演（路径 A 或路径 B），在 `spec.md` 末尾**必须增设**【架构决策与评审演进记录 (Design Evolution & ADR)】小节，完整记录立项阶段推演确立的核心权衡、关键假设与被放弃的替代方案及原因。
 
 4.  **用户核对确认:**
