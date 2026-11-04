@@ -19,10 +19,24 @@ Conductor 的底层哲学极其纯粹：**牢牢掌控你的代码**。通过将
 
 ## 安装指南 (Installation)
 
-在终端运行以下命令安装 Conductor 扩展：
+### 方式一：从团队工具箱本地安装（推荐）
+
+在已克隆 `team-toolkit` 的环境下，直接在 Gemini CLI 终端运行：
 
 ```bash
-gemini extensions install https://github.com/gemini-cli-extensions/conductor --auto-update
+gemini extensions install ./agents/gemini-conductor-extension
+```
+
+或者使用符号链接无缝接入本地 Gemini CLI 扩展目录：
+
+```bash
+ln -s "$(pwd)/agents/gemini-conductor-extension" ~/.gemini/extensions/conductor
+```
+
+### 方式二：通过 Git 仓库远程安装
+
+```bash
+gemini extensions install https://github.com/sunniwellgl/conductor --auto-update
 ```
 
 可选参数 `--auto-update`：若指定，将在扩展发布新版本时自动静默更新。
