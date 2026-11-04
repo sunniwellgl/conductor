@@ -21,17 +21,50 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
 import time
 
+def resolve_qt_root() -> str:
+    """多级智能嗅探 Qt SDK 根目录，消除用户名硬编码，提供优雅自愈能力"""
+    # 1. 优先读取显式环境变量 (QT_ROOT 或 QTDIR)
+    env_root = os.environ.get("QT_ROOT") or os.environ.get("QTDIR")
+    if env_root and os.path.exists(env_root):
+        return os.path.abspath(env_root)
+
+    # 2. 尝试从当前 PATH 中的 qmake 动态反查标准安装前缀
+    qmake = shutil.which("qmake")
+    if qmake:
+        try:
+            prefix = subprocess.check_output([qmake, "-query", "QT_INSTALL_PREFIX"], text=True).strip()
+            if prefix and os.path.exists(prefix):
+                return prefix
+        except Exception:
+            pass
+
+    # 3. 常见标准候选路径嗅探 (支持 ~ 动态展开当前登录用户家目录，杜绝硬编码特定用户名)
+    candidates = [
+        os.path.expanduser("~/Qt5.15.7/5.15.7/gcc_64"),
+        "/opt/Qt/5.15.7/gcc_64",
+        "/opt/Qt/5.15.15/gcc_64",
+        "/usr/local/Qt5.15.7/gcc_64",
+    ]
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return candidate
+
+    # 4. 若未命中有效目录，返回标准用户家目录占位路径，由预检逻辑进行可操作性拦截
+    return os.path.expanduser("~/Qt5.15.7/5.15.7/gcc_64")
+
+
 # ==============================================================================
 # [配置区] 项目与桌面运行时环境配置 (可按项目快速定制)
 # ==============================================================================
 CONFIG = {
-    # 1. Qt SDK 安装根目录 (依据项目使用的 Qt 版本配置，如 Qt 5.15.7, Qt 5.15.15, Qt 6.x)
-    "QT_ROOT": "/home/gaolin/Qt5.15.7/5.15.7/gcc_64",
+    # 1. Qt SDK 安装根目录 (优先自动探测 QT_ROOT / QTDIR / qmake / 标准路径，亦可在此显式指定)
+    "QT_ROOT": resolve_qt_root(),
 
     # 2. 桌面端构建输出二进制目录 (包含可执行文件与相关动态库插件，如 bin/)
     "BUILD_BIN_DIR": os.path.abspath("./build/Replacement_for_Desktop_Qt_5_15_7_GCC_64bit-Debug/bin"),
@@ -328,16 +361,28 @@ def execute_verification_scenario(env: dict) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description="车载 Linux PC 桌面总线模拟注入与 GUI 靶向截图复合验证模板工具")
+    parser.add_argument("--qt-root", help="覆盖默认 Qt SDK 根目录路径")
     parser.add_argument("--bin-dir", help="覆盖默认构建二进制目录路径")
     parser.add_argument("--app", help="覆盖目标启动可执行程序名称")
     parser.add_argument("--output-dir", help="覆盖验收截图保存输出目录")
     args = parser.parse_args()
 
+    if args.qt_root: CONFIG["QT_ROOT"] = os.path.abspath(args.qt_root)
     if args.bin_dir: CONFIG["BUILD_BIN_DIR"] = os.path.abspath(args.bin_dir)
     if args.app:
         CONFIG["APP_EXECUTABLE"] = args.app
         CONFIG["TARGET_WINDOW_IDENTITY"] = args.app
     if args.output_dir: CONFIG["IMAGE_OUTPUT_DIR"] = os.path.abspath(args.output_dir)
+
+    # 预检 Qt SDK 根路径
+    qt_root = CONFIG["QT_ROOT"]
+    if not os.path.exists(qt_root):
+        sys.stderr.write(f"[-] 严重错误: 未检测到有效的 Qt SDK 根目录: {qt_root}\n")
+        sys.stderr.write("[-] 提示: 请通过以下任一方式配置后再行运行:\n")
+        sys.stderr.write("    1. 终端执行: export QT_ROOT=/path/to/Qt/<version>/gcc_64\n")
+        sys.stderr.write("    2. 直接修改当前验证脚本顶部的 CONFIG['QT_ROOT']\n")
+        sys.stderr.write("    3. 运行脚本时指定参数: python3 verify_xxx.py --qt-root /path/to/Qt\n\n")
+        sys.exit(1)
 
     # 1. 嗅探并装配运行时环境
     env = detect_x11_environment()
